@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Security Scanner</title>
+  <link rel="icon" href="/static/Logo.png" type="image/png">
+
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f8f8;
+      margin: 0;
+      padding: 20px;
+      transition: background-color 0.3s;
+      overflow-y: auto;
+    }
+    body.dark-mode {
+      background-color: #101114;
+      color: #D3D3D3;
+    }
+    .container {
+      max-width: 800px;
+      width: 800px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      min-width: 400px;
+      max-width: 1200px;
+      overflow-x: hidden;
+      overflow-y: visible;
+    }
+    .container.dark-mode {
+      background-color: #0B0D0E;
+      box-shadow: 0 4px 20px rgba(255,255,255,0.05);
+    }
+    .container::before, .container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 10px;
+      background: transparent;
+      cursor: ew-resize;
+      z-index: 10;
+    }
+    .container::before {
+      left: -5px;
+    }
+    .container::after {
+      right: -5px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .dark-mode h1 {
+      color: #D3D3D3;
+    }
+    input {
+      width: calc(100% - 22px);
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      display: block;
+      background-color: #fff;
+      color: #333;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    input:focus {
+      border-color: #5C63B4;
+      box-shadow: 0 0 5px rgba(92, 99, 180, 0.5);
+      outline: none;
+    }
+    .dark-mode input {
+      background-color: #1A1C22;
+      color: #D3D3D3;
+      border-color: #3A47C3;
+    }
+    .dark-mode input:focus {
+      border-color: #5C63B4;
+      box-shadow: 0 0 5px rgba(92, 99, 180, 0.3);
+    }
+    button {
+      width: 100%;
+      background-color: #3498db;
+      color: white;
+      padding: 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 10px;
+      border-radius: 8px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+    }
+    .dark-mode button {
+      background-color: #5C63B4;
+    }
+    .dark-mode button:hover {
+      background-color: #4A529F;
+    }
+    #progress-container {
+      display: none;
+      margin: 40px auto 20px auto;
+      width: 80%;
+      text-align: center;
+    }
+    #progress-bar {
+      width: 0%;
+      height: 20px;
+      background: linear-gradient(90deg, #3498db, #5C63B4);
+      border-radius: 10px;
+      transition: width 0.5s ease-in-out;
+      box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+    }
+    .dark-mode #progress-bar {
+      background: linear-gradient(90deg, #5C63B4, #3A47C3);
+      box-shadow: 0 0 10px rgba(92, 99, 180, 0.5);
+    }
+    #progress-track {
+      width: 100%;
+      height: 20px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .dark-mode #progress-track {
+      background-color: #2A2A2A;
+    }
+    #progress-text {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #333;
+      font-weight: 500;
+    }
+    .dark-mode #progress-text {
+      color: #D3D3D3;
+    }
+    #owaspContainer, #summaryContainer {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      transition: background-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      display: none;
+      resize: none;
+      min-height: 100px;
+      max-height: 500px;
+      overflow: auto;
+    }
+    #summaryContainer {
+      overflow: visible;
+      max-height: none;
+    }
+    #owaspContainer.visible, #summaryContainer.visible {
+      display: block;
+    }
+    .dark-mode #owaspContainer, .dark-mode #summaryContainer {
+      background: #0B0D0E;
+      box-shadow: 0 2px 15px rgba(255,255,255,0.03);
+    }
+    #geminiContainer {
+      margin-top: 20px;
+      display: none;
+    }
+    #geminiContainer.visible {
+      display: block;
+    }
+    #suggestions-header {
+      padding: 10px 15px;
+      background: #fff;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    #suggestions-content {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 0 15px 15px 15px;
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      margin-top: -1px;
+    }
+    .dark-mode #suggestions-header, .dark-mode #suggestions-content {
+      background: #0B0D0E;
+      box-shadow: 0 2px 15px rgba(255,255,255,0.03);
+    }
+    #searchDetails {
+      display: none;
+      position: relative;
+    }
+    #searchDetails.expanded {
+      display: block;
+      margin-top: 20px;
+    }
+    #search-header {
+      padding: 10px 15px;
+      background: #fff;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    #search-content {
+      max-height: 536px;
+      overflow-y: auto;
+      padding: 0 15px 15px 15px;
+      background: #fff;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+      margin-top: -1px;
+      position: relative;
+    }
+    .dark-mode #search-header, .dark-mode #search-content {
+      background: #0B0D0E;
+      box-shadow: 0 2px 15px rgba(255,255,255,0.03);
+    }
+    h2, h3 {
+      color: #333;
+      margin: 0;
+      font-weight: 600;
+    }
+    .dark-mode h2, .dark-mode h3 {
+      color: #D3D3D3;
+    }
+    .frame-red {
+      border: 2px solid red;
+      background-color: #f2dede;
+      color: #a94442;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+    }
+    .dark-mode .frame-red {
+      border-color: #3A47C3;
+      background-color: #2A1C1C;
+      color: #D3D3D3;
+    }
+    .frame-orange {
+      border: 2px solid orange;
+      background-color: #faecd6;
+      color: #b45f06;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+    }
+    .dark-mode .frame-orange {
+      border-color: #3A47C3;
+      background-color: #2A261C;
+      color: #D3D3D3;
+    }
+    .frame-green {
+      border: 2px solid green;
+      background-color: #dff0d8;
+      color: #3c763d;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+    }
+    .dark-mode .frame-green {
+      border-color: #3A47C3;
+      background-color: #1C2A1C;
+      color: #D3D3D3;
+    }
+    .frame-gray {
+      border: 2px solid #ccc;
+      background-color: #eee;
+      color: #333;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 8px;
+      transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+    }
+    .dark-mode .frame-gray {
+      border-color: #3A47C3;
+      background-color: #1C1C2A;
+      color: #D3D3D3;
+    }
+    .owasp-frame {
+      display: inline-block;
+      width: 18%;
+      margin: 1%;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      vertical-align: top;
+    }
+    .switch-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      background-color: #f9f9f9;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .dark-mode .switch-frame {
+      border-color: #3A47C3;
+      background-color: #1A1C22;
+      box-shadow: 0 2px 5px rgba(255,255,255,0.05);
+    }
+    .dark-mode-toggle .switch-frame {
+      width: 68px;
+      padding: 4px;
+    }
+    .scan-type-toggle .switch-frame {
+      width: 140px;
+      padding: 10px;
+      margin: 50px auto 50px auto;
+    }
+    .switch {
+      position: relative;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      border-radius: 34px;
+      transition: background-color 0.3s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .switch input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .dark-mode-toggle .slider {
+      background-color: #e0e0e0;
+    }
+    .dark-mode-toggle .slider:before {
+      content: "☀️";
+      font-size: 18px;
+      line-height: 26px;
+      text-align: center;
+      color: #f1c40f;
+    }
+    .dark-mode-toggle input:checked + .slider {
+      background-color: #3A47C3;
+    }
+    .dark-mode-toggle input:checked + .slider:before {
+      content: "🌙";
+      color: #D3D3D3;
+    }
+    .scan-type-toggle .slider {
+      background-color: #ff8e53;
+    }
+    .scan-type-toggle input:checked + .slider {
+      background-color: #00f2fe;
+    }
+    .switch-info {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      transition: color 0.3s;
+      max-width: 120px;
+      word-wrap: break-word;
+    }
+    .dark-mode .switch-info {
+      color: #A0A0A0;
+    }
+    .dark-mode-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .owasp-legend {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #666;
+      text-align: right;
+      background: #fff;
+      padding: 8px;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+    .dark-mode .owasp-legend {
+      color: #A0A0A0;
+      background: #1A1C22;
+      box-shadow: 0 1px 5px rgba(255,255,255,0.05);
+    }
+    .search-legend {
+      position: absolute;
+      top: 5px;
+      right: 15px;
+      width: 99px;
+      font-size: 12px;
+      color: #666;
+      text-align: justify;
+      background: #fff;
+      padding: 5px;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+    .dark-mode .search-legend {
+      color: #A0A0A0;
+      background: #1A1C22;
+      box-shadow: 0 1px 5px rgba(255,255,255,0.05);
+    }
+    .search-legend div {
+      display: block;
+      margin: 2px 0;
+    }
+  </style>
+</head>
+
+<div class="container" id="resizableContainer">
+  <h1>Web Security Scanner</h1>
+
+  <div class="dark-mode-toggle">
+    <div class="switch-frame">
+      <label class="switch">
+        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <input id="urlInput" placeholder="Enter URL to scan..." required />
+
+  <div class="scan-type-toggle">
+    <div class="switch-frame">
+      <label class="switch">
+        <input type="checkbox" id="scanTypeToggle" onchange="updateScanInfo()">
+        <span class="slider"></span>
+      </label>
+      <span class="switch-info" id="scanInfo">Light Scan: Just a flash scan</span>
+    </div>
+  </div>
+
+  <button onclick="performScan()">Scan</button>
+
+  <div id="progress-container">
+    <div id="progress-track">
+      <div id="progress-bar"></div>
+    </div>
+    <p id="progress-text"></p>
+  </div>
+
+  <div id="owaspContainer"></div>
+  <div id="summaryContainer"></div>
+  <div id="geminiContainer">
+    <div id="suggestions-header"></div>
+    <div id="suggestions-content"></div>
+  </div>
+
+  <button id="toggleBtn" style="display:none;" onclick="toggleSearchDetails()">Show More</button>
+  <div id="searchDetails" data-expanded="false">
+    <div id="search-header"></div>
+    <div id="search-content"></div>
+  </div>
+</div>
+
+<script>
+  function isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function toggleDarkMode() {
+    const body = document.body;
+    const container = document.querySelector('.container');
+    body.classList.toggle('dark-mode');
+    container.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+  }
+
+  function updateScanInfo() {
+    const scanTypeToggle = document.getElementById('scanTypeToggle');
+    const scanInfo = document.getElementById('scanInfo');
+    if (scanTypeToggle.checked) {
+      scanInfo.textContent = "Deep Scan: Using 3 different scanners";
+    } else {
+      scanInfo.textContent = "Light Scan: Just a flash scan";
+    }
+  }
+
+  window.onload = function() {
+    document.getElementById('urlInput').value = 'http://testphp.vulnweb.com/';
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      document.querySelector('.container').classList.add('dark-mode');
+      document.getElementById('darkModeToggle').checked = true;
+    }
+    updateScanInfo();
+
+    const container = document.getElementById('resizableContainer');
+    const suggestionsContent = document.getElementById('suggestions-content');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const body = document.body;
+    let isResizing = false;
+    let initialX;
+    let initialWidth;
+    let isDivScrolling = false;
+    let shiftKeyPressed = false;
+    let lastScrollTop = window.scrollY || document.documentElement.scrollTop;
+
+    function startResize(event, isLeft) {
+      isResizing = true;
+      initialX = event.pageX;
+      initialWidth = container.offsetWidth;
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResize);
+    }
+
+    function resize(event) {
+      if (!isResizing) return;
+      const deltaX = event.pageX - initialX;
+      let newWidth = initialWidth + (container.classList.contains('left-resize') ? -deltaX : deltaX);
+      newWidth = Math.max(400, Math.min(1200, newWidth));
+      container.style.width = `${newWidth}px`;
+    }
+
+    function stopResize() {
+      isResizing = false;
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', stopResize);
+    }
+
+    container.addEventListener('mousedown', (event) => {
+      if (event.target === container && event.offsetX <= 10) {
+        container.classList.add('left-resize');
+        startResize(event, true);
+      } else if (event.target === container && event.offsetX >= container.offsetWidth - 10) {
+        container.classList.remove('left-resize');
+        startResize(event, false);
+      }
+    });
+
+    container.querySelectorAll('::before, ::after').forEach((pseudo) => {
+      pseudo.addEventListener('mousedown', (event) => event.stopPropagation());
+    });
+
+    function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    function handleScroll() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const deltaY = scrollTop - lastScrollTop;
+      const isScrollingDown = deltaY > 0;
+      const viewportHeight = window.innerHeight;
+      const toggleRect = toggleBtn.getBoundingClientRect();
+      const toggleBottom = toggleRect.bottom;
+      const triggerPoint = viewportHeight;
+      const tolerance = 10;
+      const hasScrollableContent = suggestionsContent.scrollHeight > suggestionsContent.clientHeight;
+
+      lastScrollTop = scrollTop;
+
+      if (isDivScrolling && hasScrollableContent) {
+        const divScrollTop = suggestionsContent.scrollTop;
+        const scrollHeight = suggestionsContent.scrollHeight;
+        const clientHeight = suggestionsContent.clientHeight;
+
+        if (isScrollingDown) {
+          if (divScrollTop + clientHeight < scrollHeight - 1) {
+            suggestionsContent.scrollTop += deltaY;
+          } else {
+            body.style.overflowY = 'auto';
+            isDivScrolling = false;
+          }
+        } else {
+          if (divScrollTop > 1) {
+            suggestionsContent.scrollTop += deltaY;
+          } else {
+            body.style.overflowY = 'auto';
+            isDivScrolling = false;
+          }
+        }
+        return;
+      }
+
+      if (!shiftKeyPressed && Math.abs(toggleBottom - triggerPoint) < tolerance && hasScrollableContent) {
+        body.style.overflowY = 'hidden';
+        isDivScrolling = true;
+
+        const divScrollTop = suggestionsContent.scrollTop;
+        const scrollHeight = suggestionsContent.scrollHeight;
+        const clientHeight = suggestionsContent.clientHeight;
+
+        if (isScrollingDown) {
+          if (divScrollTop + clientHeight < scrollHeight - 1) {
+            suggestionsContent.scrollTop += deltaY;
+          } else {
+            body.style.overflowY = 'auto';
+            isDivScrolling = false;
+          }
+        } else {
+          if (divScrollTop > 1) {
+            suggestionsContent.scrollTop += deltaY;
+          } else {
+            body.style.overflowY = 'auto';
+            isDivScrolling = false;
+          }
+        }
+      }
+    }
+
+    window.addEventListener('scroll', debounce(handleScroll, 10));
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Shift') shiftKeyPressed = true;
+    });
+    document.addEventListener('keyup', (event) => {
+      if (event.key === 'Shift') shiftKeyPressed = false;
+    });
+
+    document.addEventListener('wheel', (event) => {
+      if (isDivScrolling) {
+        event.preventDefault();
+        const deltaY = event.deltaY;
+        const scrollTop = suggestionsContent.scrollTop;
+        const scrollHeight = suggestionsContent.scrollHeight;
+        const clientHeight = suggestionsContent.clientHeight;
+
+        if (deltaY > 0 && scrollTop + clientHeight < scrollHeight - 1) {
+          suggestionsContent.scrollTop += deltaY;
+        } else if (deltaY < 0 && scrollTop > 1) {
+          suggestionsContent.scrollTop += deltaY;
+        } else {
+          body.style.overflowY = 'auto';
+          isDivScrolling = false;
+          window.scrollBy(0, deltaY);
+        }
+      }
+    }, { passive: false });
+  };
+
+  async function fetchProgress() {
+    const response = await fetch('/scan-progress');
+    const data = await response.json();
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    progressBar.style.width = `${data.progress}%`;
+    progressText.innerHTML = `${data.message} (${data.progress}%)`;
+    return data.progress < 100;
+  }
+
+  async function performScan() {
+    const url = document.getElementById('urlInput').value;
+    const scanTypeToggle = document.getElementById('scanTypeToggle');
+    const scanType = scanTypeToggle.checked ? 'deep' : 'light';
+
+    if (!isValidUrl(url)) {
+      alert('Please enter a valid URL');
+      return;
+    }
+
+    clearResults();
+
+    const progressContainer = document.getElementById('progress-container');
+    progressContainer.style.display = 'block';
+
+    const progressInterval = setInterval(async () => {
+      const isRunning = await fetchProgress();
+      if (!isRunning) {
+        clearInterval(progressInterval);
+      }
+    }, 500);
+
+    try {
+      const resp = await fetch('/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, scan_type: scanType })
+      });
+      const result = await resp.json();
+
+      clearInterval(progressInterval);
+      await fetchProgress();
+      progressContainer.style.display = 'none';
+
+      console.log("Full results JSON =>", result);
+
+      displayOwaspTop10(result);
+      displaySummary(result);
+      displayGeminiOutput(result);
+      displaySearchDetails(result);
+
+      // Visibility is handled in display functions now
+    } catch (err) {
+      console.error(err);
+      displayError();
+      clearInterval(progressInterval);
+      progressContainer.style.display = 'none';
+    }
+  }
+
+  function displayOwaspTop10(scan) {
+    const owaspContainer = document.getElementById('owaspContainer');
+    owaspContainer.innerHTML = '<h2>OWASP Top 10</h2>';
+
+    if (!scan.owasp_top_10 || typeof scan.owasp_top_10 !== 'string') {
+      owaspContainer.innerHTML += '<div class="frame-red">Failed to load OWASP Top 10 analysis.</div>';
+    } else {
+      const lines = scan.owasp_top_10.split('\n').filter(line => line.trim());
+      let html = '<div>';
+      for (const line of lines) {
+        const match = line.match(/-\s*\*\*(.+?)\*\*:\s*(Vulnerable|Not Vulnerable)\s*-\s*(.+)/i);
+        if (match) {
+          const [, category, status, summary] = match;
+          const frameClass = status.toLowerCase() === 'vulnerable' ? 'frame-red' : 'frame-gray';
+          const cleanCategory = category.replace(/\*\*/g, '');
+          html += `<div class="owasp-frame ${frameClass}">${cleanCategory}<br>${summary}</div>`;
+        }
+      }
+      html += '</div>';
+      html += '<div class="owasp-legend"><div>🔴 Threats found</div><div>⚪️ No vulnerability detected</div></div>';
+      owaspContainer.innerHTML += html;
+      owaspContainer.classList.add('visible'); // Show only if data is present
+    }
+  }
+
+  function displaySummary(scan) {
+    const summaryContainer = document.getElementById('summaryContainer');
+    summaryContainer.innerHTML = '<h2>Gemini Summary</h2>';
+
+    if (scan.gemini_summary) {
+      const summaryNoLabels = removeLabels(scan.gemini_summary).replace(/\*\*/g, '');
+      summaryContainer.innerHTML += `<div class="frame-gray">${summaryNoLabels}</div>`;
+      summaryContainer.classList.add('visible'); // Show only if data is present
+    } else {
+      summaryContainer.innerHTML += '<div class="frame-red">Failed to load summary.</div>';
+    }
+  }
+
+  function displayGeminiOutput(scan) {
+    const geminiContainer = document.getElementById('geminiContainer');
+    const suggestionsHeader = document.getElementById('suggestions-header');
+    const suggestionsContent = document.getElementById('suggestions-content');
+
+    suggestionsHeader.innerHTML = '';
+    suggestionsContent.innerHTML = '';
+
+    if (scan.security_suggestions) {
+      suggestionsHeader.innerHTML = '<h2>Security Suggestions</h2>';
+      let suggestionsHtml = formatSuggestions(scan.security_suggestions);
+      suggestionsContent.innerHTML = suggestionsHtml;
+    }
+    geminiContainer.classList.add('visible');
+  }
+
+  function displaySearchDetails(scan) {
+    const detailsContainer = document.getElementById('searchDetails');
+    const searchHeader = document.getElementById('search-header');
+    const searchContent = document.getElementById('search-content');
+
+    searchHeader.innerHTML = `<h2>Search Results (${scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1)} Scan)</h2>`;
+
+    if (scan.gemini_frames) {
+      let framesHtml = formatGeminiFrames(scan.gemini_frames);
+      searchContent.innerHTML = framesHtml + '<div class="search-legend"><div>🔴 - Vulnerable</div><div>🟡 - Warning</div><div>🟢 - Safe</div><div>⚪ - No Findings</div></div>';
+    } else {
+      searchContent.innerHTML = '<div class="frame-red">Failed to load scan results.</div><div class="search-legend"><div>🔴 - Vulnerable</div><div>🟡 - Warning</div><div>🟢 - Safe</div><div>⚪ - No Findings</div></div>';
+    }
+
+    detailsContainer.dataset.expanded = 'false';
+    document.getElementById('toggleBtn').style.display = 'block';
+    document.getElementById('toggleBtn').textContent = "Show More";
+  }
+
+  function toggleSearchDetails() {
+    const detailsContainer = document.getElementById('searchDetails');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const body = document.body;
+
+    if (detailsContainer.dataset.expanded === 'true') {
+      detailsContainer.classList.remove('expanded');
+      detailsContainer.dataset.expanded = 'false';
+      toggleBtn.textContent = "Show More";
+      body.style.overflowY = 'auto';
+    } else {
+      detailsContainer.classList.add('expanded');
+      detailsContainer.dataset.expanded = 'true';
+      toggleBtn.textContent = "Hide";
+      detailsContainer.scrollTop = 0;
+      body.style.overflowY = 'auto';
+    }
+  }
+
+  function removeLabels(text) {
+    return text
+      .replace(/\s*[-:]\s*(🔴|🟡|🟢|⚪)\s*\*\*(Vulnerable|Warning|Safe|No Findings)\*\*\s*[-:]\s*/gi, "")
+    .replace(/Vulnerable:/gi, "")
+    .replace(/Warning:/gi, "")
+    .replace(/Safe:/gi, "")
+    .replace(/No Findings:/gi, "")
+      .replace(/\*\s*/g, "");
+  }
+
+  function formatGeminiFrames(text) {
+    if (!text) return '<div class="frame-red">Failed to load scan results.</div>';
+    const lines = text.split('\n').filter(line => line.trim());
+
+    const vulnerable = [];
+    const warning = [];
+    const noFindings = [];
+    const safe = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      let frameClass = 'frame-gray';
+      const cleanText = removeLabels(trimmed).replace(/\*\*/g, '');
+
+      if (trimmed.includes('🔴') || trimmed.toLowerCase().includes('vulnerable')) {
+        frameClass = 'frame-red';
+        vulnerable.push({ text: cleanText, class: frameClass });
+      } else if (trimmed.includes('🟡') || trimmed.toLowerCase().includes('warning')) {
+        frameClass = 'frame-orange';
+        warning.push({ text: cleanText, class: frameClass });
+      } else if (trimmed.includes('🟢') || trimmed.toLowerCase().includes('safe')) {
+        frameClass = 'frame-green';
+        safe.push({ text: cleanText, class: frameClass });
+      } else if (trimmed.includes('⚪') || trimmed.toLowerCase().includes('no findings')) {
+        frameClass = 'frame-gray';
+        noFindings.push({ text: cleanText, class: frameClass });
+      } else {
+        noFindings.push({ text: cleanText, class: frameClass });
+      }
+    }
+
+    const sortedLines = [...vulnerable, ...warning, ...noFindings, ...safe];
+    
+    let html = "";
+    for (const { text, class: frameClass } of sortedLines) {
+      if (text) {
+        html += `<div class="${frameClass}">${text}</div>`;
+      }
+    }
+    return html;
+  }
+
+  function formatSuggestions(text) {
+    if (!text) return '<div class="frame-red">Failed to load security suggestions.</div>';
+    const lines = text.split('\n').filter(line => line.trim());
+    let html = "";
+    for (const line of lines) {
+      const cleanText = line.replace(/^\s*-\s*|\[\s*|\s*\]/g, "").trim().replace(/\*\*/g, '');
+      if (cleanText) {
+        html += `<div class="frame-gray">${cleanText}</div>`;
+      }
+    }
+    return html || '<div class="frame-gray">No specific suggestions generated from the scan results.</div>';
+  }
+
+  function displayError() {
+    document.getElementById('progress-container').style.display = 'none';
+    document.getElementById('searchDetails').innerHTML =
+    '<p class="frame-red">An error occurred while scanning.</p>';
+    document.getElementById('searchDetails').classList.add('visible');
+  }
+
+  function clearResults() {
+    document.getElementById('progress-container').style.display = 'none';
+    const owaspContainer = document.getElementById('owaspContainer');
+    const summaryContainer = document.getElementById('summaryContainer');
+    owaspContainer.innerHTML = '';
+    owaspContainer.classList.remove('visible');
+    summaryContainer.innerHTML = '';
+    summaryContainer.classList.remove('visible');
+    document.getElementById('geminiContainer').classList.remove('visible');
+    document.getElementById('suggestions-header').innerHTML = '';
+    document.getElementById('suggestions-content').innerHTML = '';
+    document.getElementById('searchDetails').classList.remove('expanded');
+    document.getElementById('search-header').innerHTML = '';
+    document.getElementById('search-content').innerHTML = '';
+    document.getElementById('toggleBtn').style.display = 'none';
+    document.body.style.overflowY = 'auto';
+  }
+</script>
+</body>
+</html>
