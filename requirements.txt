@@ -1,0 +1,6 @@
+flask
+requests
+httpx
+wapiti3
+google-generativeai
+tldextract
