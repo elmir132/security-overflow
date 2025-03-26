@@ -1,7 +1,4 @@
-# security-overflow
-A great insight into the world of secure pages
-
-# OWASP Vulnerability Scanner
+# Security Overflow: OWASP Vulnerability Scanner
 
 A Flask-based web application to detect OWASP Top 10 vulnerabilities in web applications using Wapiti, SQLMap, and Gemini AI. This tool provides two scanning modes (Light and Deep) and generates recommendations for fixing detected vulnerabilities.
 
@@ -19,7 +16,7 @@ A Flask-based web application to detect OWASP Top 10 vulnerabilities in web appl
 - [License](#license)
 
 ## Project Overview
-This project is a web vulnerability scanner designed to identify OWASP Top 10 vulnerabilities (e.g., SQL injections, XSS, CSRF) in web applications. It uses:
+This project, named **Security Overflow**, is a web vulnerability scanner designed to identify OWASP Top 10 vulnerabilities (e.g., SQL injections, XSS, CSRF) in web applications. It uses:
 - **Flask**: For the web framework and backend logic.
 - **Wapiti**: For general vulnerability scanning.
 - **SQLMap**: For detecting SQL injection vulnerabilities.
@@ -29,7 +26,7 @@ The app was tested on `http://testphp.vulnweb.com/`, where it successfully ident
 
 ## Features
 - **Two Scanning Modes**:
-  - **Light Scan**: Uses in-app analysis (regular expressions) and Wapiti for quick scans.
+  - **Light Scan**: Uses in-app analysis (regular expressions for SQL injections and XSS) and Wapiti for quick scans.
   - **Deep Scan**: Adds SQLMap for more thorough vulnerability detection.
 - **Gemini AI Integration**: Provides actionable recommendations for fixing vulnerabilities.
 - **User-Friendly Interface**: A simple web interface (`index.html`) for entering URLs and viewing scan results.
@@ -73,4 +70,4 @@ Before setting up the project, ensure you have the following tools installed:
 To download the project, clone the repository using Git:
 
 ```bash
-git clone https://github.com/<your-username>/owasp-vulnerability-scanner.git
+git clone https://github.com/elmir132/security-overflow.git
