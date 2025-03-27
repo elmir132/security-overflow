@@ -13,7 +13,7 @@ import google.generativeai as genai
 ##########################
 # CONFIGURATION
 ##########################
-GEMINI_API_KEY = "AIzaSyDvMnMQhyUh33pGc8GsYmd_15dnmCvtfxM"
+GEMINI_API_KEY = "YOUR_API_KEY"
 
 logging.basicConfig(level=logging.DEBUG)
 
