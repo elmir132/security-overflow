@@ -44,6 +44,10 @@ The app was tested on [http://testphp.vulnweb.com/](http://testphp.vulnweb.com/)
 
 - **Progress Tracking**: Real-time scan progress updates via the `/scan-progress` endpoint.
 
+## Published Work
+
+**Published paper:** Myrutenko, L., Parkhomenko, I., Abdullaev, E., & Denichenko, S. (2024). “Mechanisms and tools for data protection on web applications.” *Proceedings of the VII International Scientific and Practical Conference “Problems of Cyber Security of Information and Telecommunication Systems” (PCSITS)*, Kyiv, Ukraine, pp. 66–69.
+
 ## Project Structure
 
 ```
