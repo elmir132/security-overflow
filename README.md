@@ -9,6 +9,7 @@ A Flask-based web application to detect OWASP Top 10 vulnerabilities (e.g., SQL 
 - [Project Overview](#project-overview)
 - [Features](#features)
 - [Project Structure](#project-structure)
+- [Demo Screenshots](#demo-screenshots)
 - [Installation Guide](#installation-guide)
   - [Step 1: Install Essential Tools](#step-1-install-essential-tools)
   - [Step 2: Clone the Repository](#step-2-clone-the-repository)
@@ -47,6 +48,14 @@ The app was tested on [http://testphp.vulnweb.com/](http://testphp.vulnweb.com/)
 ## Published Work
 
 **Published paper:** Myrutenko, L., Parkhomenko, I., Abdullaev, E., & Denichenko, S. (2024). “Mechanisms and tools for data protection on web applications.” *Proceedings of the VII International Scientific and Practical Conference “Problems of Cyber Security of Information and Telecommunication Systems” (PCSITS)*, Kyiv, Ukraine, pp. 66–69.
+
+## Demo Screenshots
+
+The screenshots show a Light Scan against a deliberately vulnerable local fixture bound to `127.0.0.1`. The app's built-in content checks flagged SQL-like input and reflected output. The Gemini panels use a deterministic local adapter for this capture; no live Gemini request or public target was used.
+
+![Light Scan overview against the local demo fixture](docs/screenshots/light-scan-overview.png)
+
+![Findings from the local Light Scan](docs/screenshots/light-scan-findings.png)
 
 ## Project Structure
 
