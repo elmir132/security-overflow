@@ -2,6 +2,8 @@
 
 A Flask-based web application to detect OWASP Top 10 vulnerabilities (e.g., SQL injections, XSS, CSRF) in web applications using Wapiti, SQLMap, Nikto, and Gemini AI. This tool offers two scanning modes (Light and Deep) and provides recommendations for fixing detected vulnerabilities.
 
+> **Authorized use only.** Scan only systems you own or have explicit written permission to test. Active scanners (SQLMap, Nikto, Wapiti) send attack traffic and can disrupt or damage targets. The demo target `testphp.vulnweb.com` is intentionally vulnerable and provided for this purpose.
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
