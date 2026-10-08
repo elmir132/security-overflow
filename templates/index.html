@@ -498,10 +498,15 @@
 </div>
 
 <script>
+  // Scan results come from third-party sites and an LLM, so they are untrusted: never put them into innerHTML as-is.
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  }
+
   function isValidUrl(url) {
     try {
-      new URL(url);
-      return true;
+      const parsed = new URL(url);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
     } catch {
       return false;
     }
@@ -687,7 +692,7 @@
     const progressBar = document.getElementById('progress-bar');
     const progressText = document.getElementById('progress-text');
     progressBar.style.width = `${data.progress}%`;
-    progressText.innerHTML = `${data.message} (${data.progress}%)`;
+    progressText.textContent = `${data.message} (${data.progress}%)`;
     return data.progress < 100;
   }
 
@@ -756,7 +761,7 @@
           const [, category, status, summary] = match;
           const frameClass = status.toLowerCase() === 'vulnerable' ? 'frame-red' : 'frame-gray';
           const cleanCategory = category.replace(/\*\*/g, '');
-          html += `<div class="owasp-frame ${frameClass}">${cleanCategory}<br>${summary}</div>`;
+          html += `<div class="owasp-frame ${frameClass}">${escapeHtml(cleanCategory)}<br>${escapeHtml(summary)}</div>`;
         }
       }
       html += '</div>';
@@ -772,7 +777,7 @@
 
     if (scan.gemini_summary) {
       const summaryNoLabels = removeLabels(scan.gemini_summary).replace(/\*\*/g, '');
-      summaryContainer.innerHTML += `<div class="frame-gray">${summaryNoLabels}</div>`;
+      summaryContainer.innerHTML += `<div class="frame-gray">${escapeHtml(summaryNoLabels)}</div>`;
       summaryContainer.classList.add('visible'); // Show only if data is present
     } else {
       summaryContainer.innerHTML += '<div class="frame-red">Failed to load summary.</div>';
@@ -800,7 +805,7 @@
     const searchHeader = document.getElementById('search-header');
     const searchContent = document.getElementById('search-content');
 
-    searchHeader.innerHTML = `<h2>Search Results (${scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1)} Scan)</h2>`;
+    searchHeader.innerHTML = `<h2>Search Results (${escapeHtml(scan.scan_type.charAt(0).toUpperCase() + scan.scan_type.slice(1))} Scan)</h2>`;
 
     if (scan.gemini_frames) {
       let framesHtml = formatGeminiFrames(scan.gemini_frames);
@@ -881,7 +886,7 @@
     let html = "";
     for (const { text, class: frameClass } of sortedLines) {
       if (text) {
-        html += `<div class="${frameClass}">${text}</div>`;
+        html += `<div class="${frameClass}">${escapeHtml(text)}</div>`;
       }
     }
     return html;
@@ -894,7 +899,7 @@
     for (const line of lines) {
       const cleanText = line.replace(/^\s*-\s*|\[\s*|\s*\]/g, "").trim().replace(/\*\*/g, '');
       if (cleanText) {
-        html += `<div class="frame-gray">${cleanText}</div>`;
+        html += `<div class="frame-gray">${escapeHtml(cleanText)}</div>`;
       }
     }
     return html || '<div class="frame-gray">No specific suggestions generated from the scan results.</div>';
