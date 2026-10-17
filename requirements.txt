@@ -4,3 +4,4 @@ httpx
 wapiti3
 google-generativeai
 tldextract
+pyparsing>=3.1
