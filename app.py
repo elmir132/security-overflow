@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import json
 import subprocess
 import tempfile
@@ -13,11 +14,27 @@ import google.generativeai as genai
 ##########################
 # CONFIGURATION
 ##########################
-GEMINI_API_KEY = "YOUR_API_KEY"
+def _load_env_file(path=".env"):
+    """Tiny .env reader (KEY=value lines) so the README's setup step works without another dependency."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+    except OSError:
+        pass
+
+
+_load_env_file()
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 logging.basicConfig(level=logging.DEBUG)
 
-genai.configure(api_key=GEMINI_API_KEY)
+if not GEMINI_API_KEY:
+    logging.warning("GEMINI_API_KEY is not set: put it in a .env file (see the README); AI analysis will fail without it.")
+genai.configure(api_key=GEMINI_API_KEY or None)
 
 app = Flask(__name__)
 
@@ -103,10 +120,15 @@ def run_wapiti(url):
             return {"error": f"Wapiti failed: {e}"}
 
 def run_sqlmap(url):
-    if not shutil.which("sqlmap"):
+    local = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlmap", "sqlmap.py")   # the README clones sqlmap into ./sqlmap
+    if shutil.which("sqlmap"):
+        base = ["sqlmap"]
+    elif os.path.isfile(local):
+        base = [sys.executable, local]
+    else:
         return {"info": "Skipped: sqlmap not installed."}
 
-    cmd = ["sqlmap", "-u", url, "--batch", "--crawl=1", "--level=2", "--risk=2", "--smart"]
+    cmd = base + ["-u", url, "--batch", "--crawl=1", "--level=2", "--risk=2", "--smart"]
     try:
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         return {"output": result.stdout[-1000:]}
@@ -140,6 +162,8 @@ def scan():
     scan_type = data.get("scan_type", "deep").lower()
     if not url:
         return jsonify({"error": "URL is required"}), 400
+    if urlparse(url).scheme not in ("http", "https") or not urlparse(url).netloc:
+        return jsonify({"error": "URL must start with http:// or https://"}), 400
 
     reset_progress()
 

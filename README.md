@@ -160,6 +160,9 @@ Add the following line with your actual API key:
 ```ini
 GEMINI_API_KEY=your_api_key_here
 ```
+The app reads this file at startup (or the `GEMINI_API_KEY` environment variable).
+
+> **Run it locally only.** The scan endpoint fetches whatever URL it is given and runs active scanners against it, with no login. Do not expose it to a network, and only scan sites you are allowed to test.
 <img width="934" alt="google_api" src="https://github.com/user-attachments/assets/e2d64c54-009f-4d72-a0f3-8ab8b3428801" />
 
 ### Step 5: Run the Application
